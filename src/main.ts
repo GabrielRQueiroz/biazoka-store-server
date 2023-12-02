@@ -19,12 +19,16 @@ async function bootstrap() {
 		.setTitle('Biazoka Store')
 		.setDescription('A documentação em português da API da Loja da Biazoka')
 		.setVersion('0.1')
-		.addBearerAuth({
-			scheme: 'bearer',
-			type: 'http',
-			in: 'header',
-			bearerFormat: 'JWT',
-		})
+		.addBearerAuth(
+			{
+				scheme: 'bearer',
+				type: 'http',
+				in: 'header',
+				bearerFormat: 'JWT',
+			},
+			'bearerAuth',
+		)
+		.addSecurityRequirements('bearerAuth')
 		.build();
 
 	const document = SwaggerModule.createDocument(app, config);
