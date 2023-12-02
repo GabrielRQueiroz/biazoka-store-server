@@ -16,7 +16,6 @@ export class CreateUserDto {
 
 	@IsEmail()
 	@IsNotEmpty()
-	@MinLength(4)
 	@ApiProperty()
 	email: string;
 

@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import { hash } from 'bcrypt';
+import { randomUUID } from 'crypto';
 
 // initialize Prisma Client
 const prisma = new PrismaClient();
@@ -11,10 +13,11 @@ async function main() {
 		create: {
 			name: 'Biazoka Admin',
 			email: 'foo@bar.com',
-			password: '123456',
+			password: await hash('123456', 10),
+			role: 'admin',
 			createdAt: new Date(),
 			updatedAt: new Date(),
-			id: '870n6XHGJ98jt70nhi870nasdyng8967',
+			id: randomUUID(),
 		},
 	});
 	const user = await prisma.user.upsert({
@@ -23,10 +26,11 @@ async function main() {
 		create: {
 			name: 'Biazoka User',
 			email: 'bar@foo.com',
-			password: '123456',
+			password: await hash('123456', 10),
+			role: 'user',
 			createdAt: new Date(),
 			updatedAt: new Date(),
-			id: '870n6XHGJ98jt70nhi870nasdyng8968',
+			id: randomUUID(),
 		},
 	});
 

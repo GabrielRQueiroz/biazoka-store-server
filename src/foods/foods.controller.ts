@@ -1,15 +1,21 @@
 import {
 	Body,
+	ConflictException,
 	Controller,
 	Delete,
 	Get,
+	NotFoundException,
 	Param,
+	ParseIntPipe,
 	Patch,
 	Post,
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/auth/enums/roles.enum';
 import { CreateFoodDto } from './dto/create-food.dto';
 import { UpdateFoodDto } from './dto/update-food.dto';
+import { FoodEntity } from './entities/food.entity';
 import { FoodsService } from './foods.service';
 
 @Controller('foods')
@@ -19,31 +25,53 @@ export class FoodsController {
 
 	@Post()
 	@ApiCreatedResponse({ type: CreateFoodDto })
-	create(@Body() createFoodDto: CreateFoodDto) {
-		return this.foodsService.create(createFoodDto);
+	@Roles(Role.Admin)
+	async create(@Body() createFoodDto: CreateFoodDto) {
+		try {
+			return await this.foodsService.create(createFoodDto);
+		} catch (error) {
+			throw new ConflictException('Já existe uma comida com esse nome');
+		}
 	}
 
 	@Get()
-	@ApiOkResponse({ type: CreateFoodDto, isArray: true })
+	@ApiOkResponse({ type: FoodEntity, isArray: true })
 	findAll() {
 		return this.foodsService.findAll();
 	}
 
 	@Get(':id')
-	@ApiOkResponse({ type: CreateFoodDto })
-	findOne(@Param('id') id: string) {
-		return this.foodsService.findOne(+id);
+	@ApiOkResponse({ type: FoodEntity })
+	async findOne(@Param('id', ParseIntPipe) id: number) {
+		const food = await this.foodsService.findOne(id);
+		if (!food) {
+			throw new NotFoundException('Comida não encontrada');
+		}
+		return food;
 	}
 
 	@Patch(':id')
-	@ApiOkResponse({ type: CreateFoodDto })
-	update(@Param('id') id: string, @Body() updateFoodDto: UpdateFoodDto) {
-		return this.foodsService.update(+id, updateFoodDto);
+	@ApiOkResponse({ type: FoodEntity })
+	@Roles(Role.Admin)
+	async update(
+		@Param('id', ParseIntPipe) id: number,
+		@Body() updateFoodDto: UpdateFoodDto,
+	) {
+		const food = await this.foodsService.update(id, updateFoodDto);
+		if (!food) {
+			throw new NotFoundException('Comida não encontrada');
+		}
+		return food;
 	}
 
 	@Delete(':id')
-	@ApiOkResponse({ type: CreateFoodDto })
-	remove(@Param('id') id: string) {
-		return this.foodsService.remove(+id);
+	@ApiOkResponse({ type: FoodEntity })
+	@Roles(Role.Admin)
+	async remove(@Param('id', ParseIntPipe) id: number) {
+		const food = await this.foodsService.remove(id);
+		if (!food) {
+			throw new NotFoundException('Comida não encontrada');
+		}
+		return food;
 	}
 }
