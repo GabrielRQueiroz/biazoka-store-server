@@ -1,4 +1,5 @@
 import {
+	ConflictException,
 	ForbiddenException,
 	Injectable,
 	UnauthorizedException,
@@ -32,6 +33,11 @@ export class AuthService {
 				password: hashedPassword,
 			},
 		});
+
+		if (!user)
+			throw new ConflictException(
+				'Já existe usuário com o email ' + createUserDto.email,
+			);
 
 		const tokens = await this.getTokens(user);
 

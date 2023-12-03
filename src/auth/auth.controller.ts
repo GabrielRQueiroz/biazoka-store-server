@@ -1,8 +1,8 @@
 import {
 	Body,
-	ConflictException,
 	Controller,
 	HttpCode,
+	HttpException,
 	HttpStatus,
 	Post,
 	Request,
@@ -46,7 +46,7 @@ export class AuthController {
 		try {
 			return await this.authService.signup(createUserDto);
 		} catch (error) {
-			throw new ConflictException('Já existe uma conta com esse email');
+			throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
 		}
 	}
 
