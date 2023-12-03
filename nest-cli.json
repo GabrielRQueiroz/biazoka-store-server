@@ -6,12 +6,12 @@
 		"deleteOutDir": true,
 		"plugins": [
 			{
-			  "name": "@nestjs/swagger",
-			  "options": {
-				 "classValidatorShim": false,
-				 "introspectComments": true
-			  }
+				"name": "@nestjs/swagger",
+				"options": {
+					"classValidatorShim": false,
+					"introspectComments": true
+				}
 			}
-		 ]
+		]
 	}
 }

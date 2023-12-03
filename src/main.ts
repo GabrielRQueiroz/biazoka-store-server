@@ -43,7 +43,7 @@ async function bootstrap() {
 		}),
 	);
 
-	app.enableCors()
+	app.enableCors();
 	await app.listen(process.env.SERVER_PORT || 3333);
 }
 bootstrap();

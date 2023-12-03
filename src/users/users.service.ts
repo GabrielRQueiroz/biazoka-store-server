@@ -8,24 +8,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersService {
 	constructor(private readonly prisma: PrismaService) {}
 
-	async create(createUserDto: CreateUserDto) {
-		const user = {
-			...createUserDto,
-			password: await hash(createUserDto.password, 10),
-		};
-
-		return this.prisma.user.create({
-			data: user,
-			select: {
-				id: true,
-				name: true,
-				email: true,
-				createdAt: true,
-				updatedAt: true,
-			},
-		});
-	}
-
 	findAll() {
 		return this.prisma.user.findMany({
 			select: {

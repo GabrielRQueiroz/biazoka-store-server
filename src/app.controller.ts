@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
+import { ApiOkResponse } from '@nestjs/swagger';
 import { AppService } from './app.service';
-import { CurrentUser } from './auth/decorators/current-user.decorator';
-import { IsPublic } from './auth/decorators/is-public.decorator';
+import { CurrentUser } from './common/decorators';
+import { IsPublic } from './common/decorators';
 import { UserEntity } from './users/entities/user.entity';
 
 @Controller()

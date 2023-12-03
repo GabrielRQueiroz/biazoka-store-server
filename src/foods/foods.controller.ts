@@ -11,8 +11,8 @@ import {
 	Post,
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/roles.enum';
+import { Roles } from 'src/common/decorators';
 import { CreateFoodDto } from './dto/create-food.dto';
 import { UpdateFoodDto } from './dto/update-food.dto';
 import { FoodEntity } from './entities/food.entity';

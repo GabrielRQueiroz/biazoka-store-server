@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	Body,
 	ConflictException,
 	Controller,
@@ -7,11 +8,13 @@ import {
 	NotFoundException,
 	Param,
 	Patch,
-	Post,
 } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { IsPublic } from 'src/auth/decorators/is-public.decorator';
-import { CreateUserDto } from './dto/create-user.dto';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { compare } from 'bcrypt';
+import { Role } from 'src/auth/enums/roles.enum';
+import { CurrentUser } from 'src/common/decorators';
+import { Roles } from 'src/common/decorators';
+import { DeleteUserDto } from './dto/delete-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
 import { UsersService } from './users.service';
@@ -20,17 +23,6 @@ import { UsersService } from './users.service';
 @ApiTags('usuários')
 export class UsersController {
 	constructor(private readonly usersService: UsersService) {}
-
-	@IsPublic()
-	@Post()
-	@ApiCreatedResponse({ type: UserEntity })
-	async create(@Body() createUserDto: CreateUserDto) {
-		try {
-			await this.usersService.create(createUserDto);
-		} catch (error) {
-			throw new ConflictException('Já existe uma conta com esse email');
-		}
-	}
 
 	@Get()
 	@ApiOkResponse({ type: UserEntity, isArray: true })
@@ -60,11 +52,43 @@ export class UsersController {
 
 	@Delete(':id')
 	@ApiOkResponse({ type: UserEntity })
-	async remove(@Param('id') id: string) {
-		const user = await this.usersService.remove(id);
-		if (!user) {
-			throw new NotFoundException('Usuário não encontrado');
-		}
-		return user;
+	@Roles(Role.User)
+	async userRemoval(
+		@Param('id') id: string,
+		@Body() deleteUserDto: DeleteUserDto,
+		@CurrentUser() user: UserEntity,
+	) {
+		if (user.id !== id)
+			throw new ConflictException('Você não pode remover outro usuário');
+
+		if (!deleteUserDto.password)
+			throw new BadRequestException('Senha não informada');
+
+		const hashedPassword = (await this.usersService.findByEmail(user.email))
+			.password;
+
+		const isPasswordValid = await compare(
+			deleteUserDto.password,
+			hashedPassword,
+		);
+
+		if (!isPasswordValid) throw new ConflictException('Senha incorreta');
+
+		const removedUser = await this.usersService.remove(id);
+
+		if (!removedUser) throw new NotFoundException('Usuário não encontrado');
+
+		return removedUser;
+	}
+
+	@Delete(':id')
+	@ApiOkResponse({ type: UserEntity })
+	@Roles(Role.Admin)
+	async adminRemoval(@Param('id') id: string, @Body() _?: DeleteUserDto) {
+		const removedUser = await this.usersService.remove(id);
+
+		if (!removedUser) throw new NotFoundException('Usuário não encontrado');
+
+		return removedUser;
 	}
 }
